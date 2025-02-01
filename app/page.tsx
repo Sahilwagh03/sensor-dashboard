@@ -30,11 +30,7 @@ import {
 
 // Type definitions
 type SensorData = {
-  time: string;
-  alcohol: number;
-  ammonia: number;
-  carbonmonoxide: number;
-  carbondioxide: number;
+  [key: string]: number;
 };
 
 type Category = {
@@ -143,10 +139,13 @@ const CustomAreaChart: React.FC<CustomAreaChartProps> = ({ data, categories }) =
 
   return (
     <ChartContainer config={chartConfig}>
-      <ResponsiveContainer width="100%" height={200}>
+      <ResponsiveContainer width="100%" height={350}>
         <AreaChart data={data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis dataKey="time" />
+          <XAxis
+            dataKey="time"
+            tickFormatter={(time) => `${time.toString().padStart(2, '0')}:00`} // Format numeric time to "HH:00"
+          />
           <YAxis />
           <ChartTooltip
             cursor={false}
@@ -168,7 +167,6 @@ const CustomAreaChart: React.FC<CustomAreaChartProps> = ({ data, categories }) =
     </ChartContainer>
   );
 };
-
 // Custom Pie Chart component
 const CustomPieChart: React.FC<CustomPieChartProps> = ({ data }) => {
   const chartConfig: ChartConfig = {
@@ -227,7 +225,10 @@ const CustomLineChart: React.FC<CustomLineChartProps> = ({ data, categories }) =
       <ResponsiveContainer width="100%" height={350}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis dataKey="time" />
+          <XAxis
+            dataKey="time"
+            tickFormatter={(time) => `${time.toString().padStart(2, '0')}:00`} // Format numeric time to "HH:00"
+          />
           <YAxis />
           <ChartTooltip
             cursor={false}
@@ -248,7 +249,6 @@ const CustomLineChart: React.FC<CustomLineChartProps> = ({ data, categories }) =
     </ChartContainer>
   );
 };
-
 // Custom Bar Chart component with updated styling
 const CustomBarChart: React.FC<CustomBarChartProps> = ({ data }) => {
   const chartConfig: ChartConfig = {
@@ -301,9 +301,8 @@ const generateData = (): SensorData[] => {
   const data: SensorData[] = [];
   const seed = 123;
   for (let i = 0; i < 24; i++) {
-    const hour = i.toString().padStart(2, '0');
     data.push({
-      time: `${hour}:00`,
+      time: i, // Use numeric time (0 to 23)
       alcohol: 50 + Math.sin(i * 0.5 + seed) * 30,
       ammonia: 25 + Math.cos(i * 0.3 + seed) * 15,
       carbonmonoxide: 75 + Math.sin(i * 0.4 + seed) * 45,
@@ -312,7 +311,6 @@ const generateData = (): SensorData[] => {
   }
   return data;
 };
-
 export default function Home() {
   const [sensorData, setSensorData] = useState<SensorData[]>([]);
   const [mounted, setMounted] = useState(false);
@@ -327,7 +325,7 @@ export default function Home() {
   }
 
   const latestData = sensorData[sensorData.length - 1] || {
-    time: "00:00",
+    time: 0, // Numeric time
     alcohol: 0,
     ammonia: 0,
     carbonmonoxide: 0,
@@ -500,7 +498,7 @@ export default function Home() {
                     <Alert key={name} variant="destructive">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription>
-                        {`${label} level (${latestData[name].toFixed(1)} ppm) exceeds threshold (${threshold} ppm)`}
+                        {`${label} level (${latestData[name].toFixed(1)} ppm) exceeds threshold (${threshold} ppm) at ${latestData.time.toString().padStart(2, '0')}:00`}
                       </AlertDescription>
                     </Alert>
                   )
