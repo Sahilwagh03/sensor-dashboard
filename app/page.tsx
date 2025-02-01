@@ -5,7 +5,7 @@ import { GaugeCircle, AlertTriangle, Activity, Thermometer, Wind, Droplets, Tren
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+
 import {
   LineChart,
   Line,
@@ -27,6 +27,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useWebSocket } from "@/hooks/useWebsocket";
 
 // Type definitions
 type SensorData = {
@@ -296,29 +297,16 @@ const CustomBarChart: React.FC<CustomBarChartProps> = ({ data }) => {
   );
 };
 
-// Generate data function
-const generateData = (): SensorData[] => {
-  const data: SensorData[] = [];
-  const seed = 123;
-  for (let i = 0; i < 24; i++) {
-    data.push({
-      time: i, // Use numeric time (0 to 23)
-      alcohol: 50 + Math.sin(i * 0.5 + seed) * 30,
-      ammonia: 25 + Math.cos(i * 0.3 + seed) * 15,
-      carbonmonoxide: 75 + Math.sin(i * 0.4 + seed) * 45,
-      carbondioxide: 500 + Math.cos(i * 0.6 + seed) * 300,
-    });
-  }
-  return data;
-};
+
 export default function Home() {
-  const [sensorData, setSensorData] = useState<SensorData[]>([]);
+  const sensorData = useWebSocket("ws://your-websocket-url"); // Replace with your WebSocket URL
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setSensorData(generateData());
-    setMounted(true);
-  }, []);
+    if (sensorData.length > 0) {
+      setMounted(true);
+    }
+  }, [sensorData]);
 
   if (!mounted) {
     return null;

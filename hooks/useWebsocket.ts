@@ -1,8 +1,8 @@
-'use client'
+'use client';
 import { useEffect, useState } from "react";
 
 type SensorData = {
-  time: string;
+  time: number; // Numeric time
   alcohol: number;
   ammonia: number;
   carbonmonoxide: number;
@@ -20,7 +20,15 @@ export const useWebSocket = (url: string) => {
     };
 
     socket.onmessage = (event) => {
-      const newData: SensorData = JSON.parse(event.data);
+      const rawData = JSON.parse(event.data); // Incoming raw data (4 values)
+      const newData: SensorData = {
+        time: data.length % 24, // Calculate time as index (0 to 23)
+        alcohol: rawData.alcohol,
+        ammonia: rawData.ammonia,
+        carbonmonoxide: rawData.carbonmonoxide,
+        carbondioxide: rawData.carbondioxide,
+      };
+
       setData((prevData) => {
         const updatedData = [...prevData, newData];
         // Keep only the last 24 entries
@@ -42,7 +50,7 @@ export const useWebSocket = (url: string) => {
     return () => {
       socket.close();
     };
-  }, [url]);
+  }, [url, data.length]); // Add data.length to dependencies
 
   return data;
 };
